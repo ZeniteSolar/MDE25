@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "zenite")(type "KiCad")(uri "${KIPRJMOD}/ZeniteKicadLib/zenite.kicad_sym")(options "")(descr ""))
+)
