@@ -19,7 +19,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # Set the project name
-set(CMAKE_PROJECT_NAME mde25)
+set(CMAKE_PROJECT_NAME MDE25)
 
 # Include toolchain file
 include("cmake/gcc-arm-none-eabi.cmake")
@@ -48,6 +48,10 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
+    ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/Core/uart_server.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/Core/pwm.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/Core/sense.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/Core/control.c
 )
 
 # Add include paths

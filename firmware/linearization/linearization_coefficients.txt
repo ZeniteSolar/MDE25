@@ -1,0 +1,15 @@
+ADC Linearization Coefficients
+==============================
+Slope (a): 0.002327
+Intercept (b): -73.731254
+R-squared: 0.999936
+Standard error: 0.000005
+
+C Functions:
+float adc_to_voltage(float adc_value) {
+    return 0.002327f * adc_value + -73.731254f;
+}
+
+float voltage_to_adc(float voltage) {
+    return (voltage - -73.731254f) / 0.002327f;
+}
