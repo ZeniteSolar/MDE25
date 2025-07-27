@@ -4,9 +4,11 @@
 #include <string.h>
 
 #include "config.h"
+#include "usart.h"
+
+#include "Core/control.h"
 #include "Core/pwm.h"
 #include "Core/sense.h"
-#include "usart.h"
 #include "Core/uart_server.h"
 
 typedef enum {
@@ -19,10 +21,12 @@ typedef enum {
 typedef enum {
   UART_SERVER_COMMAND_SET_DUTY = 'D',
   UART_SERVER_COMMAND_SET_FREQUENCY = 'F',
-  UART_SERVER_COMMAND_SET_CONTROL_P_GAIN = 'P',
-  UART_SERVER_COMMAND_SET_CONTROL_I_GAIN = 'I',
-  UART_SERVER_COMMAND_SET_CONTROL_D_GAIN = 'D',
-  UART_SERVER_COMMAND_SET_SAMPLING_FREQUENCY = 'S',
+  UART_SERVER_COMMAND_SET_CONTROL_P_GAIN = 'p',
+  UART_SERVER_COMMAND_SET_CONTROL_I_GAIN = 'i',
+  UART_SERVER_COMMAND_SET_CONTROL_D_GAIN = 'd',
+  UART_SERVER_COMMAND_SET_SAMPLING_FREQUENCY = 's',
+  UART_SERVER_COMMAND_SET_PWM_LOCK = 'L',
+  UART_SERVER_COMMAND_MCU_RESET = 'R',
 } uart_server_commands_t;
 
 /**
@@ -71,10 +75,16 @@ void uart_server_update(void)
 
     uart_server_state_t parse_result = uart_parse_byte(uart_rx_buffer[uart_rx_buffer_parsed - 1U]);
 
-    if (parse_result == UART_SERVER_STATE_NEW_MESSAGE) {
+    if (parse_result == UART_SERVER_STATE_NEW_MESSAGE)
+    {
       uart_parse_message((const char *)uart_parser_buffer);
     }
   }
+}
+
+void uart_server_set_rx_buffer_received(uint16_t size)
+{
+  uart_rx_buffer_received = size;
 }
 
 static void uart_parse_message(const char *message)
@@ -82,7 +92,8 @@ static void uart_parse_message(const char *message)
   /** Messages should be in the format: <command>:<value (float)> */
   char *cmd_str = strtok((char*)message, ":");
   char *value_str = strtok(NULL, ":");
-  if (cmd_str == NULL || value_str == NULL) {
+  if (cmd_str == NULL || value_str == NULL)
+  {
     return;
   }
   float value = atof(value_str);
@@ -90,13 +101,35 @@ static void uart_parse_message(const char *message)
   switch (cmd_str[0])
   {
   case UART_SERVER_COMMAND_SET_DUTY:
-    pwm_set_duty(value);
+    pwm_set_duty_forced(value);
     break;
   case UART_SERVER_COMMAND_SET_FREQUENCY:
     pwm_set_frequency((uint32_t)value);
     break;
+  case UART_SERVER_COMMAND_SET_CONTROL_P_GAIN:
+    control_set_p_gain(value);
+    break;
+  case UART_SERVER_COMMAND_SET_CONTROL_I_GAIN:
+    control_set_i_gain(value);
+    break;
+  case UART_SERVER_COMMAND_SET_CONTROL_D_GAIN:
+    control_set_d_gain(value);
+    break;
   case UART_SERVER_COMMAND_SET_SAMPLING_FREQUENCY:
     sense_set_sampling_frequency((uint32_t)value);
+    break;
+  case UART_SERVER_COMMAND_SET_PWM_LOCK:
+    if (value > 0.0f)
+    {
+      pwm_lock();
+    }
+    else
+    {
+      pwm_unlock();
+    }
+    break;
+  case UART_SERVER_COMMAND_MCU_RESET:
+    HAL_NVIC_SystemReset();
     break;
   default:
     break;
@@ -109,7 +142,8 @@ static uart_server_state_t uart_parse_byte(uint8_t byte)
   {
     case UART_SERVER_STATE_WAIT_START:
       /** New message started */
-      if (byte == '<') {
+      if (byte == '<')
+      {
         /** Reset parser buffer */
         uart_parser_buffer_index = 0U;
         memset(uart_parser_buffer, 0U, UART_MAX_MESSAGE_SIZE);
@@ -119,7 +153,8 @@ static uart_server_state_t uart_parse_byte(uint8_t byte)
       break;
     case UART_SERVER_STATE_WAIT_TERMINATOR:
       /** Message terminated */
-      if (byte == '>') {
+      if (byte == '>')
+      {
         /** Discard terminator and add \0 to the end of the message */
         uart_parser_buffer[uart_parser_buffer_index++] = '\0';
         /** Reset parser to new message */
@@ -128,7 +163,8 @@ static uart_server_state_t uart_parse_byte(uint8_t byte)
         return UART_SERVER_STATE_NEW_MESSAGE;
       }
       /** Message buffer overflow */
-      if (uart_parser_buffer_index >= UART_RX_BUFFER_SIZE) {
+      if (uart_parser_buffer_index >= UART_RX_BUFFER_SIZE)
+      {
         /** Reset parser */
         uart_parser_state = UART_SERVER_STATE_WAIT_START;
         /** Informs top level that an error occurred */
@@ -142,39 +178,4 @@ static uart_server_state_t uart_parse_byte(uint8_t byte)
       uart_parser_state = UART_SERVER_STATE_WAIT_START;
   }
   return uart_parser_state;
-}
-
-/**
- * ============================
- * Interruptions
- * ============================
- */
-
-/** RX */
-
-void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
-{
-  /** We only care about UART1 */
-  if (huart != &huart1) {
-    return;
-  }
-
-  uart_rx_buffer_received = Size;
-}
-
-void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
-{
-  /** We only care about UART1 */
-  if (huart != &huart1) {
-    return;
-  }
-
-  if (__HAL_UART_GET_FLAG(huart, UART_FLAG_ORE)) {
-    __HAL_UART_CLEAR_OREFLAG(huart);
-  }
-  if (__HAL_UART_GET_FLAG(huart, UART_FLAG_FE)) {
-    __HAL_UART_CLEAR_FEFLAG(huart);
-  }
-
-  uart_server_init();
 }

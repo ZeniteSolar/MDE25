@@ -22,6 +22,11 @@
 #include "stm32l4xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "Core/status.h"
+#include "Core/control.h"
+#include "Core/CAN/can_server.h"
+#include "Core/pwm.h"
+#include "Core/uart_server.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -56,11 +61,14 @@
 
 /* External variables --------------------------------------------------------*/
 extern DMA_HandleTypeDef hdma_adc1;
+extern CAN_HandleTypeDef hcan1;
 extern TIM_HandleTypeDef htim1;
+extern TIM_HandleTypeDef htim6;
+extern TIM_HandleTypeDef htim7;
 extern DMA_HandleTypeDef hdma_usart1_rx;
 extern UART_HandleTypeDef huart1;
 /* USER CODE BEGIN EV */
-
+extern ADC_HandleTypeDef hadc1;
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -244,6 +252,34 @@ void DMA1_Channel5_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles CAN1 RX0 interrupt.
+  */
+void CAN1_RX0_IRQHandler(void)
+{
+  /* USER CODE BEGIN CAN1_RX0_IRQn 0 */
+
+  /* USER CODE END CAN1_RX0_IRQn 0 */
+  HAL_CAN_IRQHandler(&hcan1);
+  /* USER CODE BEGIN CAN1_RX0_IRQn 1 */
+
+  /* USER CODE END CAN1_RX0_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM1 break interrupt and TIM15 global interrupt.
+  */
+void TIM1_BRK_TIM15_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM1_BRK_TIM15_IRQn 0 */
+
+  /* USER CODE END TIM1_BRK_TIM15_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim1);
+  /* USER CODE BEGIN TIM1_BRK_TIM15_IRQn 1 */
+
+  /* USER CODE END TIM1_BRK_TIM15_IRQn 1 */
+}
+
+/**
   * @brief This function handles TIM1 update interrupt and TIM16 global interrupt.
   */
 void TIM1_UP_TIM16_IRQHandler(void)
@@ -271,6 +307,143 @@ void USART1_IRQHandler(void)
   /* USER CODE END USART1_IRQn 1 */
 }
 
+/**
+  * @brief This function handles TIM6 global interrupt, DAC channel1 and channel2 underrun error interrupts.
+  */
+void TIM6_DAC_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
+
+  /* USER CODE END TIM6_DAC_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim6);
+  /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
+
+  /* USER CODE END TIM6_DAC_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM7 global interrupt.
+  */
+void TIM7_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM7_IRQn 0 */
+
+  /* USER CODE END TIM7_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim7);
+  /* USER CODE BEGIN TIM7_IRQn 1 */
+
+  /* USER CODE END TIM7_IRQn 1 */
+}
+
 /* USER CODE BEGIN 1 */
+
+/**
+ * ============================
+ * CAN
+ * ============================
+ */
+
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
+{
+  /** We only care about CAN1 */
+  if (hcan->Instance == hcan1.Instance)
+  {
+    can_server_on_rx0_message_pending();
+  }
+}
+
+/**
+ * ============================
+ * TIM
+ * ============================
+ */
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /** TIM1 is handling PWM signal */
+  if (htim->Instance == htim1.Instance)
+  {
+    pwm_on_tim_period_elapsed();
+  }
+
+  /** TIM7 is being used as watchdog for CAN Steering Angle messages */
+  if (htim->Instance == htim7.Instance)
+  {
+    can_server_on_watchdog_timeout();
+  }
+
+  /** TIM6 is being used as status timer */
+  if (htim->Instance == htim6.Instance)
+  {
+    status_on_tim_update();
+  }
+}
+
+/**
+ * ============================
+ * ADC DMA
+ * ============================
+ */
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+  /** We only care about ADC1 */
+  if (hadc != &hadc1)
+  {
+    return;
+  }
+
+  control_update();
+}
+
+/**
+ * ============================
+ * UART RX
+ * ============================
+ */
+
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
+{
+  /** We only care about UART1 */
+  if (huart != &huart1)
+  {
+    return;
+  }
+
+  uart_server_set_rx_buffer_received(Size);
+}
+
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+  /** We only care about UART1 */
+  if (huart != &huart1)
+  {
+    return;
+  }
+
+  if (__HAL_UART_GET_FLAG(huart, UART_FLAG_ORE))
+  {
+    __HAL_UART_CLEAR_OREFLAG(huart);
+  }
+  if (__HAL_UART_GET_FLAG(huart, UART_FLAG_FE))
+  {
+    __HAL_UART_CLEAR_FEFLAG(huart);
+  }
+
+  uart_server_init();
+}
+
+/**
+ * ============================
+ * GPIO
+ * ============================
+ */
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  if (GPIO_Pin == USER_BUTTON_Pin)
+  {
+  }
+}
 
 /* USER CODE END 1 */

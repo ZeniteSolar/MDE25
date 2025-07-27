@@ -13,4 +13,11 @@ void uart_server_init(void);
  */
 void uart_server_update(void);
 
+/**
+ * @brief Sets the size of the received buffer
+ *
+ * @param size The size of the received buffer
+ */
+void uart_server_set_rx_buffer_received(uint16_t size);
+
 #endif /** !__CORE_UART_SERVER_H__ */

@@ -10,7 +10,7 @@ from scipy.optimize import curve_fit
 
 # Data from the measurements
 
-"""
+input_voltage_data = """
 real,adc
 0.0,63.0
 4.97,4339.0
@@ -23,7 +23,7 @@ real,adc
 36.37,31605.0
 """
 
-data = """
+output_voltage_data = """
 real,adc
 -35.27,16647.000000
 -30.19,18761.000000
@@ -44,6 +44,9 @@ real,adc
 30.19,44649.000000
 35.27,46740.000000
 """
+
+# Select the data to use
+data = input_voltage_data
 
 # Parse the data
 lines = data.strip().split('\n')[1:]  # Skip header

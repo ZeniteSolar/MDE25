@@ -1,10 +1,24 @@
 #include <math.h>
 #include <stdint.h>
 
-#include "config.h"
-#include "Core/pwm.h"
 #include "stm32l4xx_ll_tim.h"
+
+#include "config.h"
+#include "utils.h"
 #include "tim.h"
+
+#include "Core/pwm.h"
+#include "Core/sense.h"
+
+/**
+ * ============================
+ * Locals
+ * ============================
+ */
+
+static float pwm_duty = 0.0f;
+static float pwm_effective_duty = 0.0f;
+static uint8_t pwm_locked = 0U;
 
 /**
  * ============================
@@ -12,8 +26,9 @@
  * ============================
  */
 
-static void pwm_invert_switching_side(void);
-static void pwm_tim_update_signal(void);
+// static void pwm_invert_switching_side(void);
+// static void pwm_tim_update_signal(void);
+static float pwm_get_duty_from_input_voltage(float input_duty, float input_voltage);
 
 /**
  * ============================
@@ -39,27 +54,37 @@ void pwm_init(void)
 
 void pwm_set_duty(float duty)
 {
+  if (pwm_locked)
+  {
+    return;
+  }
+
+  pwm_set_duty_forced(duty);
+}
+
+void pwm_set_duty_forced(float duty)
+{
+  duty = clampf(duty, -1.0f, 1.0f);
+  pwm_duty = duty;
+  pwm_effective_duty = pwm_get_duty_from_input_voltage(duty, sense_get_input_voltage());
+
   uint16_t arr = LL_TIM_GetAutoReload(htim1.Instance);
-  uint16_t duty_cycle = arr - (uint16_t)(arr * fabs(duty));
+  uint16_t duty_cycle = arr - (uint16_t)(arr * fabs(pwm_effective_duty));
 
-  LL_TIM_OC_SetMode(htim1.Instance, LL_TIM_CHANNEL_CH1, duty > 0.0f ? LL_TIM_OCMODE_PWM2 : LL_TIM_OCMODE_PWM1);
-  LL_TIM_OC_SetMode(htim1.Instance, LL_TIM_CHANNEL_CH2, duty > 0.0f ? LL_TIM_OCMODE_PWM1 : LL_TIM_OCMODE_PWM2);
-
-  uint16_t cc1 = LL_TIM_OC_GetCompareCH1(htim1.Instance);
-  LL_TIM_OC_SetCompareCH1(htim1.Instance, cc1 == 0U ? duty_cycle : 0U);
-  LL_TIM_OC_SetCompareCH2(htim1.Instance, cc1 == 0U ? 0U : duty_cycle);
+  LL_TIM_OC_SetCompareCH2(htim1.Instance, pwm_effective_duty > 0.0f ? arr - duty_cycle : (uint16_t)0U);
+  LL_TIM_OC_SetCompareCH1(htim1.Instance, pwm_effective_duty > 0.0f ? (uint16_t)0U : arr - duty_cycle);
 
   LL_TIM_GenerateEvent_UPDATE(htim1.Instance);
 }
 
 float pwm_get_duty(void)
 {
-  uint16_t arr = LL_TIM_GetAutoReload(htim1.Instance);
-  uint16_t cc1 = LL_TIM_OC_GetCompareCH1(htim1.Instance);
-  uint16_t cc2 = LL_TIM_OC_GetCompareCH2(htim1.Instance);
-  float multiplier = LL_TIM_OC_GetMode(htim1.Instance, LL_TIM_CHANNEL_CH1) == LL_TIM_OCMODE_PWM2 ? 1.0f : -1.0f;
+  return pwm_duty;
+}
 
-  return ((float)(arr - cc1 + cc2) / (float)arr) * multiplier;
+float pwm_get_effective_duty(void)
+{
+  return pwm_effective_duty;
 }
 
 void pwm_set_frequency(uint32_t frequency)
@@ -85,13 +110,40 @@ uint32_t pwm_get_frequency(void)
   return HAL_RCC_GetPCLK1Freq() / LL_TIM_GetAutoReload(htim1.Instance);
 }
 
-static void pwm_invert_switching_side(void)
+float pwm_get_period(void)
 {
-  uint16_t cc1 = LL_TIM_OC_GetCompareCH1(htim1.Instance);
-  uint16_t cc2 = LL_TIM_OC_GetCompareCH2(htim1.Instance);
-  LL_TIM_OC_SetCompareCH2(htim1.Instance, cc1);
-  LL_TIM_OC_SetCompareCH1(htim1.Instance, cc2);
+  return 1.0f / (float)pwm_get_frequency();
 }
+
+void pwm_lock(void)
+{
+  pwm_locked = 1U;
+}
+
+void pwm_unlock(void)
+{
+  pwm_locked = 0U;
+}
+
+void pwm_on_tim_period_elapsed(void)
+{
+  //pwm_tim_update_signal();
+}
+
+static float pwm_get_duty_from_input_voltage(float input_duty, float input_voltage)
+{
+  float clamped_input_voltage = clampf(input_voltage, PWM_MIN_IN_VOLTAGE, PWM_MAX_IN_VOLTAGE);
+  float max_duty = PWM_MAX_OUT_VOLTAGE / clamped_input_voltage;
+  return mapf(input_duty, -1.0f, 1.0f, -max_duty, max_duty);
+}
+
+// static void pwm_invert_switching_side(void)
+// {
+//   uint16_t cc1 = LL_TIM_OC_GetCompareCH1(htim1.Instance);
+//   uint16_t cc2 = LL_TIM_OC_GetCompareCH2(htim1.Instance);
+//   LL_TIM_OC_SetCompareCH2(htim1.Instance, cc1);
+//   LL_TIM_OC_SetCompareCH1(htim1.Instance, cc2);
+// }
 
 /**
  * @brief Since bootstrap capacitor cannot keep 100% duty cycle continuously, we need to invert the switching side of
@@ -103,29 +155,15 @@ static void pwm_invert_switching_side(void)
  *  H2: _________⎻_⎻_⎻_⎻
  *  L2: ⎻⎻⎻⎻⎻⎻⎻⎻⎻_⎻_⎻_⎻_
  */
-static void pwm_tim_update_signal(void)
-{
-  static uint16_t repetitions_counter = 0U;
-
-  if (repetitions_counter >= PWM_INVERT_N_REPETITIONS)
-  {
-    repetitions_counter = 0U;
-    pwm_invert_switching_side();
-    return;
-  }
-  repetitions_counter++;
-}
-
-/**
- * ============================
- * Interruptions
- * ============================
- */
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-  if (htim->Instance == htim1.Instance)
-  {
-    pwm_tim_update_signal();
-  }
-}
+// static void pwm_tim_update_signal(void)
+// {
+//   static uint16_t repetitions_counter = 0U;
+//
+//   if (repetitions_counter >= PWM_INVERT_N_REPETITIONS)
+//   {
+//     repetitions_counter = 0U;
+//     pwm_invert_switching_side();
+//     return;
+//   }
+//   repetitions_counter++;
+// }

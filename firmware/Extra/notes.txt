@@ -1,0 +1,3 @@
+max input current: 8A
+
+max dead current input, running with blocked axis: 12.17 (35V) = 426W morreu por dessolda

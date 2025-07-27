@@ -1,10 +1,11 @@
 #include <stdint.h>
 
+#include "stm32l4xx_ll_tim.h"
+
 #include "adc.h"
 #include "tim.h"
+
 #include "Core/sense.h"
-#include "Core/control.h"
-#include "stm32l4xx_ll_tim.h"
 
 typedef enum {
   ADC_RANK_CURRENT_CONTROL_POINT = 0U,
@@ -54,6 +55,11 @@ uint32_t sense_get_sampling_frequency(void)
   return HAL_RCC_GetPCLK1Freq() / LL_TIM_GetAutoReload(htim2.Instance);
 }
 
+float sense_get_period(void)
+{
+  return 1.0f / (float)sense_get_sampling_frequency();
+}
+
 float sense_get_input_voltage(void)
 {
   return 0.001150f * (float)adc_dma_buffer[ADC_RANK_INPUT_VOLTAGE] + -0.088064f;
@@ -72,20 +78,4 @@ float sense_get_input_current(void)
 float sense_get_control_point(void)
 {
   return (float)adc_dma_buffer[ADC_RANK_CURRENT_CONTROL_POINT] * 2.0f / 65535.0f - 1.0f;
-}
-
-/**
- * ============================
- * Interruptions
- * ============================
- */
-
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
-{
-  /** We only care about ADC1 */
-  if (hadc != &hadc1) {
-    return;
-  }
-
-  control_update();
 }

@@ -48,15 +48,34 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
+    ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/Core/status.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/Core/uart_server.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/Core/pwm.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/Core/sense.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/Core/control.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/utils.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/Core/telemetry.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/Core/CAN/can_server.c
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
+)
+
+# Download can_ids.h and can_parser_types.h header files
+file(DOWNLOAD
+    "https://raw.githubusercontent.com/ZeniteSolar/CAN_IDS/refs/heads/master/can_ids.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Core/Inc/Core/CAN/can_ids.h"
+    SHOW_PROGRESS
+    TLS_VERIFY ON
+)
+
+file(DOWNLOAD
+    "https://raw.githubusercontent.com/ZeniteSolar/CAN_IDS/refs/heads/master/can_parser_types.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Core/Inc/Core/CAN/can_parser_types.h"
+    SHOW_PROGRESS
+    TLS_VERIFY ON
 )
 
 # Add project symbols (macros)

@@ -30,6 +30,13 @@ void sense_set_sampling_frequency(uint32_t frequency);
 uint32_t sense_get_sampling_frequency(void);
 
 /**
+ * @brief Returns the period of the sense module
+ *
+ * @return float Period in seconds
+ */
+float sense_get_period(void);
+
+/**
  * @brief Returns current measured output voltage
  *
  * @return float Output voltage in volts

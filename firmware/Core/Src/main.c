@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "adc.h"
+#include "can.h"
 #include "dma.h"
 #include "tim.h"
 #include "usart.h"
@@ -28,10 +29,15 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 
+#include "config.h"
+
 #include "Core/pwm.h"
 #include "Core/sense.h"
 #include "Core/control.h"
 #include "Core/uart_server.h"
+#include "Core/CAN/can_server.h"
+#include "Core/status.h"
+#include "Core/telemetry.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -100,15 +106,22 @@ int main(void)
   MX_TIM1_Init();
   MX_ADC1_Init();
   MX_TIM2_Init();
+  MX_CAN1_Init();
+  MX_TIM7_Init();
+  MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
 
+  /** Some stabilization delay to avoid fast resets killing driver */
+  HAL_Delay(2000);
   pwm_init();
+  HAL_Delay(2000);
+
   sense_init();
   control_init(sense_get_control_point, pwm_set_duty);
+  can_server_init(control_set_setpoint, control_reset_setpoint);
   uart_server_init();
 
-  control_set_setpoint(0.0f);
-
+  long long last_update_tick = HAL_GetTick();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -119,6 +132,15 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    if (HAL_GetTick() - last_update_tick > TELEMETRY_UPDATE_INTERVAL_MS)
+    {
+      /** Update telemetry */
+      telemetry_update();
+      last_update_tick = HAL_GetTick();
+
+      /** Tells user we are alive */
+      HAL_GPIO_TogglePin(USER_LED_RED_GPIO_Port, USER_LED_RED_Pin);
+    }
   }
   /* USER CODE END 3 */
 }
@@ -173,14 +195,6 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
-  if (GPIO_Pin == USER_BUTTON_Pin)
-  {
-    printf("Button pressed\r\n");
-  }
-}
 
 /* USER CODE END 4 */
 
