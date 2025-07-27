@@ -4,6 +4,13 @@
 	(generator_version "9.0")
 	(uuid "9d2d9991-08b8-4e4c-a0d2-7dc9b2c899cc")
 	(paper "A4")
+	(title_block
+		(title "Módulo Direção Eletronica 2025 (MDE25)")
+		(date "2025-07-27")
+		(rev "0.0.1")
+		(company "Zenite Solar")
+		(comment 1 "Placa de Controle")
+	)
 	(lib_symbols
 		(symbol "Connector_Generic:Conn_01x03"
 			(pin_names
