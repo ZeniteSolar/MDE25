@@ -93,7 +93,7 @@ A placa de potência é um sistema extremamente simples, sendo suas únicas fun�
 
 Função de receber a tensão da bateria principal e alimentar a ponte H. Possui um fusível de 20 A para proteção e um banco de capacitores para estabilização da tensão que será utilizada pela ponte H.
 
-![etapa-entrada](./assets/etapa_entrada.png)
+![Etapa de Entrada Placa de Potência](./assets/etapa_entrada.png)
 
 * Conector KRE de alimentação (bateria principal)
 * Fusível de 20 A
@@ -109,7 +109,7 @@ Função de receber a tensão da bateria principal e alimentar a ponte H. Possui
 
 Os drivers são responsáveis por converter o sinal de PWM (Baixa tensão 3.3V e baixa capacidade de corrente) para um sinal de gate apropriado para os MOSFETs, além de que, por se tratar de uma ponte H completa, é necessário um driver com capacidade de chavear MOSFETs high-side e low-side. Assim sendo, foram utilizados dois drivers UCC27211DDAR, um para cada braço da ponte H. Mais especificações podem ser encontradas no datasheet do driver [UCC27211DDAR](https://www.ti.com/lit/ds/symlink/ucc27211.pdf) e no texto abaixo.
 
-![drivers](./assets/drivers.png)
+![Drivers](./assets/drivers.png)
 
 * 2 × UCC27211DDAR (meia ponte, tecnologia bootstrap)
 * Acionamento complementar com limitação de corrente de gate por resistores de 62 Ω, ajustado em laboratório conforme notas de aplicação [External Gate Resistor Design Guide for Gate Drivers](https://www.ti.com/lit/ab/slla385a/slla385a.pdf)
@@ -125,7 +125,7 @@ Configurations](https://www.ti.com/lit/an/slua887a/slua887a.pdf):
 
 A ponte H é composta por quatro MOSFETs, dois para cada braço da ponte H, sendo que cada braço é composto por um MOSFET high-side e um MOSFET low-side, permitindo a reversão completa do motor e controle de velocidade através do duty cycle do PWM.
 
-![mosfets](./assets/mosfets.png)
+![Ponte H](./assets/mosfets.png)
 
 * 4 × BSC093N15NS5 (150 V, 87 A, R<sub>DS(on)</sub> = 9,3 mΩ)
 * Proteção por snubber com TVS de 111 V (breakdown), 160 V (clamping)
@@ -139,7 +139,7 @@ A ponte H é composta por quatro MOSFETs, dois para cada braço da ponte H, send
 
 ## Sensor de Corrente (Entrada)
 
-![sensor-corrente](./assets/sensor_de_corrente.png)
+![Sensor de Corrente](./assets/sensor_de_corrente.png)
 
 * Shunt de 1 mΩ + amplificador INA283 (ganho de 50 V/V)
 * Saturação a 3,3 V → Corrente máxima medida ≈ 66 A
@@ -148,7 +148,7 @@ A ponte H é composta por quatro MOSFETs, dois para cada braço da ponte H, send
 
 ## Sensor de Tensão (Entrada e Saída)
 
-![sensor-tensao](./assets/sensor_de_tensao.png)
+![Sensor de Tensão](./assets/sensor_de_tensao.png)
 
 * Divisor resistivo para adequar até 60 V para 2,6 V
 * Filtro passa-baixa de 100 nF a 40 Hz
@@ -166,7 +166,7 @@ A placa de controle, como já mencionado, é responsável por realizar as seguin
 * Monitorar a posição do leme através do potenciômetro.
 * Gerar uma ação de controle para o motor através do PWM.
 
-![placa-controle](./assets/placa_de_controle.png)
+![Placa de Controle](./assets/placa_de_controle.png)
 
 * Alimentação lógica e dos drivers por 18 V da rede CAN
 * Comunicação CAN conforme padrão do barco solar
@@ -187,42 +187,42 @@ Dado que praticamente todos os componentes já eram impostos (Já existiam no in
 Com o projeto em mãos, foi realizada a fabricação das placas, ambas placas foram fabricadas localmente utilizando-se a técnica de fotolitografia com tinta UV e uma impressora de resina Elegoo Mars 2 PRO para a exposição UV. Os químicos utilizados foram os padrões para esse tipo de processo (Carbonato de Sódio 1%, Percloreto de Ferro e Acetona). Após a manufatura, ambas placas foram estanhadas, tendo em vista que o ambiente de trabalho é propenso à corrosão e o estanhamento melhora a vida útil das placas.
 
 ## Placa de Controle
-![Placa de Controle Top](./assets/mde25/control_board_top.jpeg)
-![Placa de Controle Bottom](./assets/mde25/control_board_bottom.jpeg)
+![Placa de Controle Topo](./assets/mde25/control_board_top.jpeg)
+![Placa de Controle Base](./assets/mde25/control_board_bottom.jpeg)
 
 ## Placa de Potência
-![Placa de Potência Top](./assets/mde25/power_board_top.jpeg)
-![Placa de Potência Bottom](./assets/mde25/power_board_bottom.jpeg)
+![Placa de Potência Topo](./assets/mde25/power_board_top.jpeg)
+![Placa de Potência Base](./assets/mde25/power_board_bottom.jpeg)
 
 ## Placa de controle montada
 
-![Placa de Controle Montada Top](./assets/mde25/control_board_complete_top.jpeg)
-![Placa de Controle Montada Bottom](./assets/mde25/control_board_complete_bottom.jpeg)
+![Placa de Controle Montada Topo](./assets/mde25/control_board_complete_top.jpeg)
+![Placa de Controle Montada Base](./assets/mde25/control_board_complete_bottom.jpeg)
 
 ## Placa de potência montada
 
-![Placa de Potência Montada Top](./assets/mde25/power_board_complete_top.jpeg)
-![Placa de Potência Montada Bottom](./assets/mde25/power_board_complete_bottom.jpeg)
+![Placa de Potência Montada Topo](./assets/mde25/power_board_complete_top.jpeg)
+![Placa de Potência Montada Base](./assets/mde25/power_board_complete_bottom.jpeg)
 
 ## Sistema de dissipação térmica
 
-![Dissipador](./assets/mde25/heatsink_top.jpeg)
+![Dissipador 1](./assets/mde25/heatsink_top.jpeg)
 
-![Dissipador](./assets/mde25/heatsink_bottom.jpeg)
+![Dissipador 2](./assets/mde25/heatsink_bottom.jpeg)
 
-![Dissipador](./assets/mde25/heatsink_assembly_partial.jpeg)
+![Dissipador 3](./assets/mde25/heatsink_assembly_partial.jpeg)
 
-![Dissipador](./assets/mde25/heatsink_assembly_final.jpeg)
+![Dissipador 4](./assets/mde25/heatsink_assembly_final.jpeg)
 
 ## MDE25 - Montagem Final
 
-![MDE25 - Montagem Final](./assets/mde25/complete_front.jpeg)
+![MDE25 - Montagem Final Frente](./assets/mde25/complete_front.jpeg)
 
-![MDE25 - Montagem Final](./assets/mde25/complete_back.jpeg)
+![MDE25 - Montagem Final Trás](./assets/mde25/complete_back.jpeg)
 
-![MDE25 - Montagem Final](./assets/mde25/complete_top.jpeg)
+![MDE25 - Montagem Final Topo](./assets/mde25/complete_top.jpeg)
 
-![MDE25 - Montagem Final](./assets/mde25/complete_bottom.jpeg)
+![MDE25 - Montagem Final Base](./assets/mde25/complete_bottom.jpeg)
 
 ---
 
@@ -244,7 +244,7 @@ Como pode ser visto, o sistema operou corretamente conforme o esperado, abaixo m
 
 Foi realizado um teste com o volante indo de limite a limite a velocidade constante:
 
-![teste-volante](./assets/teste_limites.jpg)
+![Teste de Limite a Limite Velocidade Constante](./assets/teste_limites.jpg)
 
 * O motor leva cerca de 1s para atingir o extremo oposto (Ótimo tempo de resposta)
 * Na reversão, consome cerca de 40 A por 500 ms
@@ -265,11 +265,11 @@ Foi necessário cerca de 30 segundos para que o sistema entrasse em sobrecarga e
 
 Dado que os MOSFETs utilizados realizam a sua troca de calor com o dissipador por um pad térmico, ou seja, a transferência não é realizada pelo case do componente, mas sim pelo seu pad de dreno, é necessário que a placa seja capaz de conduzir esse calor de forma efetiva para o dissipador, assim foram feitas vias de cobre (5 vias de 0.7mm para cada MOSFET). Segue abaixo a foto das vias térmicas.
 
-![Vias](./assets/mde25/vias.png)
+![Vias Térmicas](./assets/mde25/vias.png)
 
 Como pode ser observado, um dos conjuntos de vias ficou apenas com 3 vias efetivamente transferindo calor, pois 2 acabaram sendo lixadas pelo processo de fabricação, isso resultou com que o MOSFET associado com essas vias viesse a sobreaquecer e dessoldar, não sendo o calor diretamente a causa da queima, mas sim a dessolda do MOSFET que resultou em uma gota de solda dando curto no braço da ponte H e após isso gerando a queima. Segue foto do MOSFET queimado.
 
-![MOSFET queimado](./assets/mde25/dead_nmos.jpeg)
+![MOSFET Queimado](./assets/mde25/dead_nmos.jpeg)
 
 # Notas extras sobre estimativa da Indutância do Motor
 
