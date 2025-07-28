@@ -7,7 +7,14 @@
  * ============================
  */
 
+/**
+ * @brief Interval used to send new batch of telemetry data to host computer
+ */
 #define TELEMETRY_UPDATE_INTERVAL_MS 25U
+
+/**
+ * @brief Preamble used to identify telemetry data
+ */
 #define TELEMETRY_PREAMBLE 0x5A54U
 
 /**
