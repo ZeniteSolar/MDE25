@@ -1,3 +1,13 @@
+<!-- PROJECT LOGO -->
+<br />
+<div align="center">
+  <a href="https://github.com/ZeniteSolar/MDE25">
+    <img src="./assets/logo.png" alt="Project Logo" width="70">
+  </a>
+
+  <h3 align="center">Módulo de Direção Elétrica 2025 (MDE25)</h3>
+</div>
+
 # Visão Geral do Sistema
 
 O sistema de direção elétrica do barco solar é composto por duas placas interligadas, uma de controle e outra de potência. O propósito do sistema é ser capaz de controlar o leme do barco conforme comandos recebidos pela rede CAN do barco enviados pelo Módulo Interface de Controle (MIC).
