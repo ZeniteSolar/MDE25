@@ -5,6 +5,7 @@ O sistema de direção elétrica do barco solar é composto por duas placas inte
 O barco contém atualmente a revisão [MDE22](https://github.com/ZeniteSolar/MDE22). Como pode ser visto, atualmente o barco contém uma bateria auxiliar de 12V dedicada para alimentar o sistema de direção elétrica, algo que não é tão proveitoso, sendo que o barco possui um banco de baterias principal que é mais que capacitado para alimentar o sistema de direção elétrica. Assim sendo, a bateria auxiliar implica em peso e eletrônica adicional, sendo que requer um Módulo de Carregamento de Bateria Auxiliar.
 
 Tendo em vista a fundamentação acima, a revisão 2025 (MDE25) tem por objetivo:
+
 * Remover a bateria auxiliar de 12V
 * Utilizar o banco de baterias principal para alimentar o sistema de direção elétrica
 * Melhorar aspectos gerais do sistema, velocidade de resposta, confiabilidade, etc.
@@ -99,7 +100,6 @@ Função de receber a tensão da bateria principal e alimentar a ponte H. Possui
 * Fusível de 20 A
 * Shunt de 1 mΩ para medição de corrente
 * Filtros:
-
   * 2 × 470 µF eletrolíticos
   * 4 × 1 µF cerâmicos para redução de ripple e compensação de indutâncias parasitas
 
@@ -171,7 +171,6 @@ A placa de controle, como já mencionado, é responsável por realizar as seguin
 * Alimentação lógica e dos drivers por 18 V da rede CAN
 * Comunicação CAN conforme padrão do barco solar
 * MCU STM32L431:
-
   * Leitura de posição do leme (potenciômetro via ADC)
   * Implementação do controle proporcional
   * Geração do PWM de controle para os drivers
