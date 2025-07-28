@@ -1,6 +1,4 @@
-# Módulo de Direção Elétrica. Revisão 2025 (MDE25)
-
-## Visão Geral do Sistema
+# Visão Geral do Sistema
 
 O sistema de direção elétrica do barco solar é composto por duas placas interligadas, uma de controle e outra de potência. O propósito do sistema é ser capaz de controlar o leme do barco conforme comandos recebidos pela rede CAN do barco enviados pelo Módulo Interface de Controle (MIC).
 
@@ -48,7 +46,7 @@ A placa de controle é responsável por realizar a parte lógica do sistema, bem
 
 A placa de potência é um sistema extremamente simples, sendo suas únicas funções controlar o motor utilizando uma Ponte H conforme sinais de PWM recebidos da placa de controle, prover sinais de medição, ou seja (Tensão de entrada, Tensão de saída e Corrente de entrada), sendo esses já tratados para serem convertidos pelo ADC do microcontrolador da placa de controle.
 
-#### Componentes Principais
+## Componentes Principais
 
 * **Topologia:** Ponte H (full-bridge) com dois drivers UCC27211DDAR e quatro MOSFETs BSC093N15NS5.
 * **Sensoriamento:**
@@ -64,7 +62,7 @@ A placa de potência é um sistema extremamente simples, sendo suas únicas fun�
 
 ---
 
-## Fluxo de Sinal e Potência
+# Fluxo de Sinal e Potência
 
 1. **Entrada de Comando:**
    A placa MIC mede a posição do volante e transmite via CAN o setpoint da posição do leme através da mensagem `CAN_MSG_MIC19_MDE_ID`.
@@ -89,9 +87,9 @@ A placa de potência é um sistema extremamente simples, sendo suas únicas fun�
 
 ---
 
-## Etapas da Placa de Potência
+# Etapas da Placa de Potência
 
-### Entrada
+## Entrada
 
 Função de receber a tensão da bateria principal e alimentar a ponte H. Possui um fusível de 20 A para proteção e um banco de capacitores para estabilização da tensão que será utilizada pela ponte H.
 
@@ -107,7 +105,7 @@ Função de receber a tensão da bateria principal e alimentar a ponte H. Possui
 
 ---
 
-### Drivers
+## Drivers
 
 Os drivers são responsáveis por converter o sinal de PWM (Baixa tensão 3.3V e baixa capacidade de corrente) para um sinal de gate apropriado para os MOSFETs, além de que, por se tratar de uma ponte H completa, é necessário um driver com capacidade de chavear MOSFETs high-side e low-side. Assim sendo, foram utilizados dois drivers UCC27211DDAR, um para cada braço da ponte H. Mais especificações podem ser encontradas no datasheet do driver [UCC27211DDAR](https://www.ti.com/lit/ds/symlink/ucc27211.pdf) e no texto abaixo.
 
@@ -123,7 +121,7 @@ Configurations](https://www.ti.com/lit/an/slua887a/slua887a.pdf):
 
 ---
 
-### Ponte H (MOSFETs + Snubber)
+## Ponte H (MOSFETs + Snubber)
 
 A ponte H é composta por quatro MOSFETs, dois para cada braço da ponte H, sendo que cada braço é composto por um MOSFET high-side e um MOSFET low-side, permitindo a reversão completa do motor e controle de velocidade através do duty cycle do PWM.
 
@@ -139,7 +137,7 @@ A ponte H é composta por quatro MOSFETs, dois para cada braço da ponte H, send
 
 ---
 
-### Sensor de Corrente (Entrada)
+## Sensor de Corrente (Entrada)
 
 ![sensor-corrente](./assets/sensor_de_corrente.png)
 
@@ -148,7 +146,7 @@ A ponte H é composta por quatro MOSFETs, dois para cada braço da ponte H, send
 
 ---
 
-### Sensor de Tensão (Entrada e Saída)
+## Sensor de Tensão (Entrada e Saída)
 
 ![sensor-tensao](./assets/sensor_de_tensao.png)
 
@@ -159,7 +157,7 @@ A ponte H é composta por quatro MOSFETs, dois para cada braço da ponte H, send
 
 ---
 
-## Placa de Controle
+# Placa de Controle
 
 A placa de controle, como já mencionado, é responsável por realizar as seguintes funções:
 
@@ -178,7 +176,7 @@ A placa de controle, como já mencionado, é responsável por realizar as seguin
   * Implementação do controle proporcional
   * Geração do PWM de controle para os drivers
 
-## Implementação do Projeto
+# Implementação do Projeto
 
 Dado que praticamente todos os componentes já eram impostos (Já existiam no inventário da Zenite Solar e não podiam ser adquiridos novos atualmente), o projeto foi simplesmente a realização dos requisitos. Assim sendo, foi utilizado o software KiCad para a elaboração do projeto.
 
@@ -188,11 +186,11 @@ Dado que praticamente todos os componentes já eram impostos (Já existiam no in
 
 Com o projeto em mãos, foi realizada a fabricação das placas, ambas placas foram fabricadas localmente utilizando-se a técnica de fotolitografia com tinta UV e uma impressora de resina Elegoo Mars 2 PRO para a exposição UV. Os químicos utilizados foram os padrões para esse tipo de processo (Carbonato de Sódio 1%, Percloreto de Ferro e Acetona). Após a manufatura, ambas placas foram estanhadas, tendo em vista que o ambiente de trabalho é propenso à corrosão e o estanhamento melhora a vida útil das placas.
 
-### Placa de Controle
+## Placa de Controle
 ![Placa de Controle Top](./assets/mde25/control_board_top.jpeg)
 ![Placa de Controle Bottom](./assets/mde25/control_board_bottom.jpeg)
 
-### Placa de Potência
+## Placa de Potência
 ![Placa de Potência Top](./assets/mde25/power_board_top.jpeg)
 ![Placa de Potência Bottom](./assets/mde25/power_board_bottom.jpeg)
 
@@ -226,25 +224,23 @@ Com o projeto em mãos, foi realizada a fabricação das placas, ambas placas fo
 
 ![MDE25 - Montagem Final](./assets/mde25/complete_bottom.jpeg)
 
-
-
 ---
 
-## Testes
+# Testes
 
 Para monitoramento/ajustes, um pequeno aplicativo Python foi desenvolvido, pode-se encontrar [Aqui](../firmware/Extra/TelemetryPanel/panel.py). Esse aplicativo foi utilizado para verificar comportamento do sistema e ajustar o controlador PID.
 
-### Simples exemplo de um teste em hardware real (Direção + Leme) aproximando uma resposta ao degrau
+## Simples exemplo de um teste em hardware real (Direção + Leme) aproximando uma resposta ao degrau
 
 ![Resposta ao degrau](./assets/step_response.png)
 
-### Simples exemplo de um teste em hardware real (Direção + Leme) aproximando um setpoint seguindo uma onda triangular
+## Simples exemplo de um teste em hardware real (Direção + Leme) aproximando um setpoint seguindo uma onda triangular
 
 ![Setpoint triangular](./assets/triangle_response.png)
 
 Como pode ser visto, o sistema operou corretamente conforme o esperado, abaixo mais detalhes sobre os testes são apresentados.
 
-### Limite a limite velocidade constante
+## Limite a limite velocidade constante
 
 Foi realizado um teste com o volante indo de limite a limite a velocidade constante:
 
@@ -255,7 +251,7 @@ Foi realizado um teste com o volante indo de limite a limite a velocidade consta
 * Corrente estabiliza em torno de 11 A após aceleração
 * Temperatura do dissipador atingiu 60 °C após 2 min de teste contínuo (Esse comportamento de teste contínuo não é um caso esperado que o piloto realize em operação normal)
 
-### Teste de queima
+## Teste de queima
 
 Após a validação do sistema, desejou-se testar a capacidade de sobrecarga do MDE25, para assim entender os limites e como o sistema vem a falhar. Para isso, o eixo do leme foi travado e o piloto comandou a direção de um extremo ao outro do leme.
 
@@ -265,7 +261,7 @@ As métricas do painel de monitoramento foram as seguintes:
 
 Foi necessário cerca de 30 segundos para que o sistema entrasse em sobrecarga e viesse a queima. Como pode ser visto pelo painel, no momento em que entra em sobrecarga, a tensão na bateria principal caiu cerca de 4V. Indo de aproximadamente 38V para 34V, isso demonstra que um estresse muito grande foi aplicado ao sistema, tendo em vista que se trata de um banco de baterias de chumbo com alta capacidade de corrente. Após a queima, o sistema foi desmontado e averigou-se a causa da queima.
 
-### Detalhes da queima e notas sobre o sistema
+## Detalhes da queima e notas sobre o sistema
 
 Dado que os MOSFETs utilizados realizam a sua troca de calor com o dissipador por um pad térmico, ou seja, a transferência não é realizada pelo case do componente, mas sim pelo seu pad de dreno, é necessário que a placa seja capaz de conduzir esse calor de forma efetiva para o dissipador, assim foram feitas vias de cobre (5 vias de 0.7mm para cada MOSFET). Segue abaixo a foto das vias térmicas.
 
@@ -275,11 +271,11 @@ Como pode ser observado, um dos conjuntos de vias ficou apenas com 3 vias efetiv
 
 ![MOSFET queimado](./assets/mde25/dead_nmos.jpeg)
 
-## Notas extras sobre estimativa da Indutância do Motor
+# Notas extras sobre estimativa da Indutância do Motor
 
 Para estimar a indutância do motor, utilizamos o ripple de corrente observado em regime permanente com o motor em velocidade constante.
 
-### Parâmetros do teste:
+## Parâmetros do teste:
 
 * Corrente média: **11 A**
 * Ripple de corrente: **10%** → $\Delta I = 1{,}1\,\text{A}_{pp}$
@@ -288,7 +284,7 @@ Para estimar a indutância do motor, utilizamos o ripple de corrente observado e
 * Frequência de PWM: **20 kHz** (→ período $T_s = 50\,\mu\text{s}$)
 * Topologia: **Ponte H full-bridge com modulação bipolar**
 
-### Modelo de cálculo:
+## Modelo de cálculo:
 
 Assumindo modulação bipolar, a variação de corrente durante o ciclo de comutação é dada por:
 
@@ -306,7 +302,7 @@ L = \frac{2 \cdot 36\,\text{V} \cdot 0{,}4 \cdot 50 \times 10^{-6}\,\text{s}}{1{
 \approx 1{,}31\,\text{mH}
 $$
 
-### Resultado:
+## Resultado:
 
 A indutância estimada do motor é:
 
@@ -314,9 +310,9 @@ $$
 \boxed{L \approx 1{,}31\;\text{mH}}
 $$
 
-## Sobre o Firmware
+# Sobre o Firmware
 
-### Arquitetura de Software
+## Arquitetura de Software
 
 O firmware está organizado em módulos funcionais especializados:
 - **Core/control**: Implementação do controlador PID
@@ -345,7 +341,7 @@ O módulo implementa um controlador PID digital completo (control.c) com as segu
 - Janela de média móvel: 15 amostras para filtragem de setpoint para evitar mudança abrupta de setpoint.
 
 **Algoritmo PID:**
-```c
+```
 error = setpoint - feedback
 integral += error * dt
 integral = clamp(integral, -0.1, 0.1)  // Anti-windup
@@ -373,7 +369,7 @@ O módulo controla a ponte H através de dois canais PWM complementares (pwm.c):
 
 **Compensação de Tensão** (pwm.c):
 O sistema implementa compensação automática baseada na tensão de entrada:
-```c
+```
 max_duty = PWM_MAX_OUT_VOLTAGE / clamped_input_voltage;
 effective_duty = map(input_duty, -1.0, 1.0, -max_duty, max_duty);
 ```
@@ -392,7 +388,7 @@ effective_duty = map(input_duty, -1.0, 1.0, -max_duty, max_duty);
 Sistema de conversão analógico-digital de 4 canais simultâneos (sense.c:10-16):
 
 **Canais de Conversão:**
-```c
+```
 typedef enum {
   ADC_RANK_CURRENT_CONTROL_POINT = 0U,  // Posição do leme
   ADC_RANK_INPUT_VOLTAGE = 1U,           // Tensão de entrada
@@ -431,7 +427,7 @@ Implementa cliente CAN para recepção de comandos do MIC19 (can_server.c):
 - **Assinatura**: 240 (CAN_SIGNATURE_MIC19)
 
 **Estrutura da Mensagem:**
-```c
+```
 Byte 0: Assinatura (240)
 Byte 1: Position_L (8 bits baixos)
 Byte 2: Position_H (8 bits altos)
@@ -442,7 +438,7 @@ Byte 3: Reservado
 
 Normalização do setpoint -1.0 a 1.0:
 
-```c
+```
 uint16_t position = rxData[1] | (rxData[2] << 8);
 float steering_angle = (position / 1024.0f) * 2.0f - 1.0f;
 ```
@@ -465,7 +461,7 @@ Sistema de comunicação serial para debug e ajuste de parâmetros (uart_server.
 - **Buffer**: 128 bytes com buffer circular
 
 **Comandos Disponíveis:**
-```c
+```
 'D': Set PWM duty cycle (-1.0 a 1.0)
 'F': Set PWM frequency (Hz)
 'p': Set PID proportional gain
@@ -478,7 +474,7 @@ Sistema de comunicação serial para debug e ajuste de parâmetros (uart_server.
 
 #### Implementação do Parser
 **Máquina de Estados** (uart_server.c):
-```c
+```
 UART_SERVER_STATE_WAIT_START      -> Aguarda '<'
 UART_SERVER_STATE_WAIT_TERMINATOR -> Coleta dados até '>'
 UART_SERVER_STATE_NEW_MESSAGE     -> Mensagem completa
@@ -489,7 +485,7 @@ UART_SERVER_STATE_ERROR           -> Overflow ou erro
 #### Estrutura de Dados
 Coleta e transmite métricas do sistema (telemetry.h):
 
-```c
+```
 typedef struct {
   uint16_t preamble;           // 0x5A54
   float sense_input_voltage;   // Tensão de entrada
@@ -527,7 +523,7 @@ Gerencia indicação sonora de estado do sistema (status.c):
 - **Desconectado**: Tom único alto
 
 **Parâmetros Sonoros:**
-```c
+```
 #define STATUS_TONE_FREQUENCY_LOW_HZ    2093.0f  // C7
 #define STATUS_TONE_FREQUENCY_MEDIUM_HZ 2794.0f  // F7
 #define STATUS_TONE_FREQUENCY_HIGH_HZ   4186.0f  // C8
@@ -549,10 +545,7 @@ Gerencia indicação sonora de estado do sistema (status.c):
 
 ### 8. Utilitários Matemáticos (utils.h)
 
-#### Funções de Apoio
-Biblioteca de funções matemáticas otimizadas:
-
-```c
+```
 float clampf(float value, float min, float max);
 // Limita valor entre mínimo e máximo
 
