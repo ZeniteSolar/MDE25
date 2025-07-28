@@ -84,7 +84,7 @@ A placa de potência é um sistema extremamente simples, sendo suas únicas fun�
    * Corrente média operacional: 20–30 A (No uso normal do barco)
    * Corrente contínua máxima: 42 A (com eixo travado até a queima) com picos de 80 A.
    * Potência média máxima: 425 W (Teste realizado até a queima da ponte H por incapacidade de dissipação e consequente dessolda dos MOSFETs)
-   * Dissipador alcançou 60 °C após 2 minutos de teste com reversão contínua, ou seja, ir de um extremo ao outro do leme (condição não usual)
+   * Dissipador alcançou 60 C após 2 minutos de teste com reversão contínua, ou seja, ir de um extremo ao outro do leme (condição não usual)
 
 ---
 
@@ -248,7 +248,7 @@ Foi realizado um teste com o volante indo de limite a limite a velocidade consta
 * O motor leva cerca de 1s para atingir o extremo oposto (Ótimo tempo de resposta)
 * Na reversão, consome cerca de 40 A por 500 ms
 * Corrente estabiliza em torno de 11 A após aceleração
-* Temperatura do dissipador atingiu 60 °C após 2 min de teste contínuo (Esse comportamento de teste contínuo não é um caso esperado que o piloto realize em operação normal)
+* Temperatura do dissipador atingiu 60 C após 2 min de teste contínuo (Esse comportamento de teste contínuo não é um caso esperado que o piloto realize em operação normal)
 
 ## Teste de queima
 
