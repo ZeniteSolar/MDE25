@@ -67,7 +67,6 @@ def read_serial():
 
             required_keys = {
                 'sense_input_voltage',
-                'sense_input_current',
                 'sense_output_voltage',
                 'sense_control_point',
                 'control_setpoint',
