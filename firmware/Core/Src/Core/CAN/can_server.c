@@ -25,6 +25,9 @@ static uint32_t can_server_error_count = 0;
  */
 
 static void can_server_filter_config(CAN_HandleTypeDef *hcan, uint16_t id, uint32_t fifo, uint32_t bank);
+static void can_server_init_peripheral(void);
+static char *can_server_error_to_string(uint32_t error);
+
 
 /**
  * ============================
@@ -147,7 +150,7 @@ static void can_server_filter_config(CAN_HandleTypeDef *hcan, uint16_t id, uint3
 char *can_server_error_to_string(uint32_t error)
 {
   switch (error) {
-    case HAL_CAN_ERROR_BOFF:
+    case HAL_CAN_ERROR_BOF:
       return "Bus off error";
     case HAL_CAN_ERROR_EPV:
       return "Error Passive";
