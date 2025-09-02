@@ -59,6 +59,7 @@ void EXTI2_IRQHandler(void);
 void DMA1_Channel1_IRQHandler(void);
 void DMA1_Channel5_IRQHandler(void);
 void CAN1_RX0_IRQHandler(void);
+void CAN1_SCE_IRQHandler(void);
 void TIM1_BRK_TIM15_IRQHandler(void);
 void TIM1_UP_TIM16_IRQHandler(void);
 void USART1_IRQHandler(void);

@@ -16,6 +16,7 @@
 
 static on_steering_angle_fn_t can_server_on_steering_angle = NULL;
 static on_steering_angle_fn_t can_server_on_reset_setpoint = NULL;
+static uint32_t can_server_error_count = 0;
 
 /**
  * ============================
@@ -37,8 +38,7 @@ void can_server_init(on_steering_angle_fn_t on_steering_angle, on_steering_angle
   can_server_filter_config(&hcan1, CAN_MSG_MIC19_MDE_ID, CAN_FILTER_FIFO0, 0U);
 
   /* Starts the CAN peripheral */
-  HAL_CAN_Start(&hcan1);
-  HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING);
+  can_server_init_peripheral();
 
   /** Start Watchdog */
   HAL_TIM_Base_Start_IT(&htim7);
@@ -47,10 +47,36 @@ void can_server_init(on_steering_angle_fn_t on_steering_angle, on_steering_angle
   can_server_on_reset_setpoint = on_reset_setpoint;
 }
 
+void can_server_init_peripheral(void)
+{
+  /* Initialize the CAN peripheral */
+  HAL_CAN_Init(&hcan1);
+  
+  /* Activate the CAN peripheral notifications */
+  HAL_CAN_ActivateNotification(&hcan1,
+    CAN_IT_RX_FIFO0_MSG_PENDING |
+    CAN_IT_ERROR_WARNING |
+    CAN_IT_ERROR_PASSIVE |
+    CAN_IT_BUSOFF |
+    CAN_IT_LAST_ERROR_CODE |
+    CAN_IT_ERROR);
+
+  can_server_error_count = 0;
+}
+
+void can_server_deinit_peripheral(void)
+{
+  /* Deactivate the CAN peripheral notifications */
+  HAL_CAN_DeInit(&hcan1);
+}
+
 void can_server_on_rx0_message_pending(void)
 {
   CAN_RxHeaderTypeDef rxHeader;
   uint8_t rxData[8];
+
+  /* On new message, reset the error count */
+  can_server_error_count = 0;
 
   if (HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &rxHeader, rxData) != HAL_OK)
   {
@@ -80,6 +106,15 @@ void can_server_on_rx0_message_pending(void)
 
 void can_server_on_watchdog_timeout(void)
 {
+
+  /* If the can had an error, reinit the peripheral */
+  if (can_server_error_count > 0)
+  {
+    can_server_deinit_peripheral();
+    HAL_Delay(10);
+    can_server_init_peripheral();
+  }
+
   status_on_disconnect();
 
   if (can_server_on_reset_setpoint != NULL)
@@ -107,4 +142,63 @@ static void can_server_filter_config(CAN_HandleTypeDef *hcan, uint16_t id, uint3
   {
     Error_Handler();
   }
+}
+
+char *can_server_error_to_string(uint32_t error)
+{
+  switch (error) {
+    case HAL_CAN_ERROR_BOFF:
+      return "Bus off error";
+    case HAL_CAN_ERROR_EPV:
+      return "Error Passive";
+    case HAL_CAN_ERROR_EWG:
+      return "Protocol Error Warning";
+    case HAL_CAN_ERROR_STF:
+      return "Stuff error";
+    case HAL_CAN_ERROR_FOR:
+      return "Form error";
+    case HAL_CAN_ERROR_ACK:
+      return "Acknowledgment error";
+    case HAL_CAN_ERROR_BR:
+      return "Bit recessive error";
+    case HAL_CAN_ERROR_BD:
+      return "Bit dominant error";
+    case HAL_CAN_ERROR_CRC:
+      return "CRC error";
+    case HAL_CAN_ERROR_RX_FOV0:
+      return "Rx FIFO0 overrun error";
+    case HAL_CAN_ERROR_RX_FOV1:
+      return "Rx FIFO1 overrun error";
+    case HAL_CAN_ERROR_TX_ALST0:
+      return "TxMailbox 0 transmit failure due to arbitration lost";
+    case HAL_CAN_ERROR_TX_TERR0:  
+      return "TxMailbox 0 transmit failure due to transmit error";
+    case HAL_CAN_ERROR_TX_ALST1:
+      return "TxMailbox 1 transmit failure due to arbitration lost";
+    case HAL_CAN_ERROR_TX_TERR1:
+      return "TxMailbox 1 transmit failure due to transmit error";
+    case HAL_CAN_ERROR_TX_ALST2:
+      return "TxMailbox 2 transmit failure due to arbitration lost";
+    case HAL_CAN_ERROR_TX_TERR2:
+      return "TxMailbox 2 transmit failure due to transmit error";
+    case HAL_CAN_ERROR_TIMEOUT:
+      return "Timeout error";
+    case HAL_CAN_ERROR_NOT_INITIALIZED:
+      return "Peripheral not initialized";
+    case HAL_CAN_ERROR_NOT_READY:
+      return "Peripheral not ready";
+    case HAL_CAN_ERROR_NOT_STARTED:
+      return "Peripheral not started";
+    case HAL_CAN_ERROR_PARAM:
+      return "Parameter error";
+    default:
+      return "Unknown error";
+  }
+}
+
+void can_server_on_error(void)
+{
+  uint32_t error = HAL_CAN_GetError(&hcan1);
+  printf("CAN error: %s\n", can_server_error_to_string(error));
+  can_server_error_count++;
 }

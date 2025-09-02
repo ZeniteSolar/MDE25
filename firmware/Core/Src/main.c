@@ -209,7 +209,17 @@ void Error_Handler(void)
   __disable_irq();
   while (1)
   {
+    /* Blink red LED */
+    for (int i = 100; i <= 10; i-=10)
+    {
+      HAL_GPIO_TogglePin(USER_LED_RED_GPIO_Port, USER_LED_RED_Pin);
+      HAL_Delay(i);
+    }
+
+    /* Reboot */
+    NVIC_SystemReset();
   }
+
   /* USER CODE END Error_Handler_Debug */
 }
 
