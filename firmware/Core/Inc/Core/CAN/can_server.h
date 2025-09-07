@@ -23,4 +23,9 @@ void can_server_on_rx0_message_pending(void);
  */
 void can_server_on_watchdog_timeout(void);
 
+/**
+ * @brief Callback function for when an error occurs
+ */
+void can_server_on_error(void);
+
 #endif /** !__CAN_SERVER_H__ */
