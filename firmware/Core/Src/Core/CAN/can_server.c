@@ -5,6 +5,8 @@
 #include "tim.h"
 #include "stm32l4xx_ll_tim.h"
 
+#include "iwdg.h"
+
 #include "Core/status.h"
 #include "Core/CAN/can_server.h"
 
@@ -67,6 +69,9 @@ void can_server_on_rx0_message_pending(void)
     float steering_angle_deg = (position / 1024.0f) * 2.0f - 1.0f;
 
     status_on_connect();
+
+    /* Pet the independent watchdog */
+    HAL_IWDG_Refresh(&hiwdg);
 
     if (can_server_on_steering_angle != NULL)
     {
